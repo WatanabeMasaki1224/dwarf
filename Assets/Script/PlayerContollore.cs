@@ -10,6 +10,7 @@ public class PlayerContollore : MonoBehaviour
     public float gravity = -9.8f;
     private CharacterController controller;
     private Vector3 velocity;
+    private Vector3 moveInput;
     private void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -20,14 +21,15 @@ public class PlayerContollore : MonoBehaviour
         Move();
         Jump();
         Gravity();
+        Vector3 totalMove = moveInput * moveSpeed + velocity;
+        controller.Move(totalMove * Time.deltaTime);
     }
 
     private void Move()
     {
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
-        Vector3 move = new Vector3(h, 0, v);
-        controller.Move(move * moveSpeed * Time.deltaTime);
+        moveInput = new Vector3(h,0, v);
     }
 
     private void Jump()
@@ -49,8 +51,5 @@ public class PlayerContollore : MonoBehaviour
     private void Gravity()
     {
         velocity.y = gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
     }
-
-
 }
