@@ -1,55 +1,43 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using Cinemachine;
 using UnityEngine;
 
 public class PlayerContollore : MonoBehaviour
 {
-    public float moveSpeed = 3f;
-    public float jumpPower = 5f;
+    public float moveSpeed  = 3f;
     public float gravity = -9.8f;
     private CharacterController controller;
     private Vector3 velocity;
-    private Vector3 moveInput;
+
     private void Start()
     {
         controller = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void Update()
     {
-        Move();
-        Jump();
-        Gravity();
-        Vector3 totalMove = moveInput * moveSpeed + velocity;
-        controller.Move(totalMove * Time.deltaTime);
-    }
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+        // ÉJÉÅÉâäÓèÄÇÃï˚å¸
+        Vector3 camForward = Camera.main.transform.forward;
+        Vector3 camRight = Camera.main.transform.right;
 
-    private void Move()
-    {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-        moveInput = new Vector3(h,0, v);
-    }
-
-    private void Jump()
-    {
-        if(controller.isGrounded)
+        camForward.y = 0f;
+        camRight.y = 0f;
+        camForward.Normalize();
+        camRight.Normalize();
+        Vector3 move = camRight * x + camForward * z;
+        controller.Move(move * moveSpeed * Time.deltaTime);   
+        if(controller.isGrounded && velocity.y < 0)
         {
-            if(velocity.y < 0)
-            {
-                velocity.y = 2f;
-            }
-
-            if(Input.GetKeyDown(KeyCode.Space))
-            {
-                velocity.y = jumpPower;
-            }
+            velocity.y = -2f;
         }
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 
-    private void Gravity()
-    {
-        velocity.y = gravity * Time.deltaTime;
-    }
 }
