@@ -10,6 +10,7 @@ public class PlayerContollore : MonoBehaviour
     public float gravity = -9.8f;
     private CharacterController controller;
     private Vector3 velocity;
+    public bool isHidden { get; private set; }  //ƒXƒeƒ‹ƒX’†‚©”»’è
 
     private void Start()
     {
@@ -38,6 +39,24 @@ public class PlayerContollore : MonoBehaviour
         }
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("HideArea"))
+        {
+            isHidden = true;
+            Debug.Log("isHidden = true");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if(other.CompareTag("HideArea"))
+        {
+            isHidden = false;
+            Debug.Log("isHidden = false;");
+        }
     }
 
 }
