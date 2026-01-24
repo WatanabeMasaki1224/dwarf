@@ -11,6 +11,8 @@ public class CatController : MonoBehaviour
     public float noticeRange = 3f;  //‹C‚Ã‚­‹——£
     public float turnSpeed = 5f;  //U‚èŒü‚­‘¬‚³
     Transform player;
+    public float viewAngle = 60f;  //‹–ìŠp
+    public float viewDistance = 8f; //Œ©‚¦‚é‹——£
 
     private void Start()
     {
@@ -21,10 +23,18 @@ public class CatController : MonoBehaviour
 
     private void Update()
     {
+        //ƒvƒŒƒCƒ„[‚ª‹ŠE‚É“ü‚Á‚½‚ç’ÇÕ
+        if(PlayerInView())
+        {
+            agent.SetDestination(player.position);
+            return;
+        }
+        //„‰ñˆ—
         if(!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             MoveNextPoint();
         }
+        //‹ß‚Ã‚¢‚½‚çU‚è•Ô‚é
         TurnAroundCat();
     }
 
@@ -45,5 +55,16 @@ public class CatController : MonoBehaviour
             Quaternion targetRot = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * turnSpeed);
         }
+    }
+
+    bool PlayerInView()
+    {
+        Vector3 dirToPlayer =(player.position - transform.position).normalized;
+        float angle = Vector3.Angle(transform.forward, dirToPlayer);
+        if(angle <= viewAngle * 0.5f && Vector3.Distance(transform.position, player.position) <= viewDistance)
+        {
+            return true;
+        }
+        return false;
     }
 }
