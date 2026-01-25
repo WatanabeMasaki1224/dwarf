@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+
+public enum CatState
+{
+    Patrol,
+    Chase,
+    Search
+}
+
 public class CatController : MonoBehaviour
 {
     public Transform[] patrolPoints;　//じゅんかいポイント
@@ -13,29 +21,88 @@ public class CatController : MonoBehaviour
     Transform player;
     public float viewAngle = 60f;  //視野角
     public float viewDistance = 8f; //見える距離
+    CatState currentState = CatState.Patrol;
+    public float searchTime = 3f;　//見失う時間
+    float searchTimer;
+    PlayerContollore playerControlle ;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        MoveNextPoint();
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        playerControlle = player.GetComponent<PlayerContollore>();
+        MoveNextPoint();
     }
 
     private void Update()
     {
-        //プレイヤーが視界に入ったら追跡
-        if(PlayerInView())
+        switch (currentState)
         {
-            agent.SetDestination(player.position);
-            return;
+            case CatState.Patrol:
+                PatrolUpdate();
+                break;
+            case CatState.Chase:
+                ChaseUpdate();
+                break;
+            case CatState.Search:
+                SearchUpdate();
+                break;
         }
+    }
+
+    void PatrolUpdate()
+    {
         //巡回処理
-        if(!agent.pathPending && agent.remainingDistance < 0.2f)
+        if (!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             MoveNextPoint();
         }
         //近づいたら振り返る
         TurnAroundCat();
+
+        if(PlayerInView())
+        {
+            currentState = CatState.Chase;
+        }
+    }
+
+    void ChaseUpdate()
+    {
+        agent.SetDestination(player.position);
+
+        // ハイド中なら見失う
+        if (playerControlle != null && playerControlle.isHidden)
+        {
+            currentState = CatState.Search;
+            searchTimer = searchTime;
+            agent.SetDestination(transform.position);
+            return;
+        }
+
+        // 視界から消えた
+        if (!PlayerInView())
+        {
+            currentState = CatState.Search;
+            searchTimer = searchTime;
+            agent.SetDestination(transform.position);
+        }
+    }
+
+    void SearchUpdate()
+    {
+        searchTimer -= Time.deltaTime;
+        //プレイヤーが視界に入ったら追跡
+        if (PlayerInView())
+        {
+            currentState = CatState.Chase;
+            return;
+        }
+        // 探索終了 → 巡回へ
+        if (searchTimer <= 0f)
+        {
+            currentState = CatState.Patrol;
+            MoveNextPoint();
+        }
     }
 
     void MoveNextPoint() //巡回
