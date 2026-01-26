@@ -24,7 +24,12 @@ public class CatController : MonoBehaviour
     CatState currentState = CatState.Patrol;
     public float searchTime = 3f;　//見失う時間
     float searchTimer;
-    PlayerContollore playerControlle ;
+    PlayerContollore playerControlle;
+    Vector3 lastPosition;　//最後にプレイヤーを見た位置
+    bool movingPatrolPoint; //巡回地点に戻り中か
+    public float maxSearchMoveTime = 5f;
+    float moveTimer;
+
 
     private void Start()
     {
@@ -69,36 +74,41 @@ public class CatController : MonoBehaviour
     void ChaseUpdate()
     {
         agent.SetDestination(player.position);
+        lastPosition = player.position;
 
-        // ハイド中なら見失う
-        if (playerControlle != null && playerControlle.isHidden)
+        // ハイド中or視界から消える
+        if (!PlayerInView() || playerControlle.isHidden)
         {
             currentState = CatState.Search;
             searchTimer = searchTime;
-            agent.SetDestination(transform.position);
-            return;
-        }
-
-        // 視界から消えた
-        if (!PlayerInView())
-        {
-            currentState = CatState.Search;
-            searchTimer = searchTime;
-            agent.SetDestination(transform.position);
+            moveTimer = maxSearchMoveTime;
+            movingPatrolPoint = false;
+            //最後に見た位置に向かう
+            agent.SetDestination(lastPosition);
         }
     }
 
     void SearchUpdate()
     {
         searchTimer -= Time.deltaTime;
+        moveTimer -= Time.deltaTime;
         //プレイヤーが視界に入ったら追跡
         if (PlayerInView())
         {
             currentState = CatState.Chase;
             return;
         }
-        // 探索終了 → 巡回へ
-        if (searchTimer <= 0f)
+        // 最後に見た位置に到達or時間切れ
+        if (!movingPatrolPoint && (!agent.pathPending && agent.remainingDistance < 0.3f || moveTimer <= 0f))
+        {
+            Transform nearest = GetNearestPatrolPoint();
+            agent.SetDestination(nearest.position);
+            currentIndex = System.Array.IndexOf(patrolPoints, nearest);
+            movingPatrolPoint = true;
+        }
+
+        // 巡回地点に戻ったら Patrol へ
+        if (movingPatrolPoint && !agent.pathPending && agent.remainingDistance < 0.3f)
         {
             currentState = CatState.Patrol;
             MoveNextPoint();
@@ -134,4 +144,22 @@ public class CatController : MonoBehaviour
         }
         return false;
     }
+
+    Transform GetNearestPatrolPoint()
+    {
+        Transform nearest = null;
+        float minDistance = Mathf.Infinity;
+
+        foreach (Transform point in patrolPoints)
+        {
+            float dist = Vector3.Distance(transform.position, point.position);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                nearest = point;
+            }
+        }
+        return nearest;
+    }
+
 }
