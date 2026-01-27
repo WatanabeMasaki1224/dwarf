@@ -29,6 +29,7 @@ public class CatController : MonoBehaviour
     bool movingPatrolPoint; //èÑâÒínì_Ç…ñﬂÇËíÜÇ©
     public float maxSearchMoveTime = 5f;
     float moveTimer;
+    GameOverController gameOver;
 
 
     private void Start()
@@ -36,6 +37,7 @@ public class CatController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.FindGameObjectWithTag("Player").transform;
         playerControlle = player.GetComponent<PlayerContollore>();
+        gameOver =FindAnyObjectByType<GameOverController>();
         MoveNextPoint();
     }
 
@@ -160,6 +162,14 @@ public class CatController : MonoBehaviour
             }
         }
         return nearest;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.CompareTag("Player"))
+        {
+            gameOver.PlayGameOver();
+        }
     }
 
 }
