@@ -11,6 +11,8 @@ public class PlayerContollore : MonoBehaviour
     private CharacterController controller;
     private Vector3 velocity;
     public bool isHidden { get; private set; }  //ステルス中か判定
+    public GameObject soundItem;
+    public float placeDistance = 1f; //アイテムをおく距離
 
     private void Start()
     {
@@ -39,6 +41,11 @@ public class PlayerContollore : MonoBehaviour
         }
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
+
+        if(Input.GetKeyDown(KeyCode.F))
+        {
+            PlaceSoundItem();
+        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -57,6 +64,12 @@ public class PlayerContollore : MonoBehaviour
             isHidden = false;
             Debug.Log("isHidden = false;");
         }
+    }
+
+    void PlaceSoundItem()
+    {
+        Vector3 pos = transform.position + transform.forward * placeDistance;
+        Instantiate(soundItem,pos,Quaternion.identity);
     }
 
 }

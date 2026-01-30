@@ -8,7 +8,8 @@ public enum CatState
 {
     Patrol,
     Chase,
-    Search
+    Search,
+    SoundSearch
 }
 
 public class CatController : MonoBehaviour
@@ -30,6 +31,9 @@ public class CatController : MonoBehaviour
     public float maxSearchMoveTime = 5f;
     float moveTimer;
     GameOverController gameOver;
+    GameObject currentSound;
+    public float soundStayTime = 2f; //音の場所で待つ時間
+    float soundTimer;
 
 
     private void Start()
@@ -54,6 +58,10 @@ public class CatController : MonoBehaviour
             case CatState.Search:
                 SearchUpdate();
                 break;
+            case CatState.SoundSearch:
+                SoundUpdate();
+                break;
+
         }
     }
 
@@ -117,6 +125,24 @@ public class CatController : MonoBehaviour
         }
     }
 
+    void SoundUpdate()
+    {
+        //音アイテムが消えたら巡回に戻る
+        if(currentSound  == null)
+        {
+            agent.isStopped = false;
+            currentState = CatState.Patrol;
+            return;
+        }
+        //音の位置へ移動
+        agent.SetDestination(currentSound.transform.position);
+        //到着したらその場で待機
+        if(!agent.pathPending && agent.remainingDistance < 0.3f)
+        {
+            agent.isStopped = true;
+        }
+    }
+
     void MoveNextPoint() //巡回
     {
         if (patrolPoints.Length == 0) return;
@@ -166,9 +192,20 @@ public class CatController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Player"))
+        if (other.CompareTag("Player"))
         {
             gameOver.PlayGameOver();
+            return;
+        }
+
+        if (other.CompareTag("SoundItem"))
+        {
+            if(currentState != CatState.Chase)
+            {
+                currentSound = other.gameObject;
+                currentState = CatState.SoundSearch;
+            }
+            
         }
     }
 
