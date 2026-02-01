@@ -192,6 +192,20 @@ public class CatController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        //soundsearch’†‚ÍƒvƒŒƒCƒ„[–³‹
+        if (currentState == CatState.SoundSearch)
+        {
+            if (other.CompareTag("SoundItem"))
+            {
+                if (currentState != CatState.Chase)
+                {
+                    currentSound = other.gameObject;
+                    currentState = CatState.SoundSearch;
+                }
+            }
+            return;
+        }
+
         if (other.CompareTag("Player"))
         {
             gameOver.PlayGameOver();

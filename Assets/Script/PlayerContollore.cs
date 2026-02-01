@@ -13,6 +13,8 @@ public class PlayerContollore : MonoBehaviour
     public bool isHidden { get; private set; }  //ステルス中か判定
     public GameObject soundItem;
     public float placeDistance = 1f; //アイテムをおく距離
+    public bool hasSoundItem = false;
+
 
     private void Start()
     {
@@ -42,7 +44,7 @@ public class PlayerContollore : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
-        if(Input.GetKeyDown(KeyCode.F))
+        if(Input.GetKeyDown(KeyCode.F) && hasSoundItem)
         {
             PlaceSoundItem();
         }
@@ -54,6 +56,13 @@ public class PlayerContollore : MonoBehaviour
         {
             isHidden = true;
             Debug.Log("isHidden = true");
+        }
+
+        if(other.CompareTag("PickupSoundItem"))
+        {
+            hasSoundItem = true;
+            Destroy(other.gameObject);
+            Debug.Log("SoundItemGET");
         }
     }
 
@@ -70,6 +79,9 @@ public class PlayerContollore : MonoBehaviour
     {
         Vector3 pos = transform.position + transform.forward * placeDistance;
         Instantiate(soundItem,pos,Quaternion.identity);
+        hasSoundItem = false;
     }
+
+
 
 }
