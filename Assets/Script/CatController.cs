@@ -34,14 +34,20 @@ public class CatController : MonoBehaviour
     GameObject currentSound;
     public float soundStayTime = 2f; //音の場所で待つ時間
     float soundTimer;
-
+    public float patrolSpeed = 1.5f; // 巡回速度
+    public float chaseSpeed = 3.5f;  // 追跡速度
+    public float soundSpeed = 2.5f;  // 音調査速度
+    Animator anim;
+    public float backDetectDistance = 1.5f;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        agent.updateRotation = false;
         player = GameObject.FindGameObjectWithTag("Player").transform;
         playerControlle = player.GetComponent<PlayerContollore>();
         gameOver =FindAnyObjectByType<GameOverController>();
+        anim = GetComponent<Animator>();
         MoveNextPoint();
     }
 
@@ -63,19 +69,22 @@ public class CatController : MonoBehaviour
                 break;
 
         }
+        UpdateAnimation();
+        UpdateRotation();
     }
 
     void PatrolUpdate()
-    {
+    {   
+        agent.speed = patrolSpeed;
         //巡回処理
         if (!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             MoveNextPoint();
         }
         //近づいたら振り返る
-        TurnAroundCat();
+       // TurnAroundCat();
 
-        if(PlayerInView())
+        if(CanDetectPlayer())
         {
             currentState = CatState.Chase;
         }
@@ -83,11 +92,12 @@ public class CatController : MonoBehaviour
 
     void ChaseUpdate()
     {
+        agent.speed = chaseSpeed;
         agent.SetDestination(player.position);
         lastPosition = player.position;
 
         // ハイド中or視界から消える
-        if (!PlayerInView() || playerControlle.isHidden)
+        if (!CanDetectPlayer() || playerControlle.isHidden)
         {
             currentState = CatState.Search;
             searchTimer = searchTime;
@@ -100,10 +110,11 @@ public class CatController : MonoBehaviour
 
     void SearchUpdate()
     {
+        agent.speed= soundSpeed;
         searchTimer -= Time.deltaTime;
         moveTimer -= Time.deltaTime;
         //プレイヤーが視界に入ったら追跡
-        if (PlayerInView())
+        if (CanDetectPlayer())
         {
             currentState = CatState.Chase;
             return;
@@ -150,7 +161,7 @@ public class CatController : MonoBehaviour
         currentIndex = (currentIndex +1) % patrolPoints.Length;
     }
 
-    void TurnAroundCat() //振り向く
+    /*void TurnAroundCat() //振り向く
     {
         float distance = Vector3.Distance(transform.position,player.position);
         if (distance < noticeRange)
@@ -160,11 +171,18 @@ public class CatController : MonoBehaviour
             Quaternion targetRot = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * turnSpeed);
         }
-    }
+    }*/
 
-    bool PlayerInView()
+    bool CanDetectPlayer()
     {
-        Vector3 dirToPlayer =(player.position - transform.position).normalized;
+        Vector3 dirToPlayer =(player.position - transform.position);
+        float distance = dirToPlayer.magnitude;
+        //背後でも近距離なら感知
+        if (distance <= backDetectDistance)
+            return true;
+
+        // ② 前方視界判定
+        dirToPlayer.Normalize();
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
         if(angle <= viewAngle * 0.5f && Vector3.Distance(transform.position, player.position) <= viewDistance)
         {
@@ -195,14 +213,6 @@ public class CatController : MonoBehaviour
         //soundsearch中はプレイヤー無視
         if (currentState == CatState.SoundSearch)
         {
-            if (other.CompareTag("SoundItem"))
-            {
-                if (currentState != CatState.Chase)
-                {
-                    currentSound = other.gameObject;
-                    currentState = CatState.SoundSearch;
-                }
-            }
             return;
         }
 
@@ -220,6 +230,24 @@ public class CatController : MonoBehaviour
                 currentState = CatState.SoundSearch;
             }
             
+        }
+    }
+
+    void UpdateAnimation()
+    {
+        float speed = agent.velocity.magnitude;
+        anim.SetBool("isWalk",speed > 0.1f);
+        anim.speed = Mathf.Lerp(0.3f,1.0f,speed/chaseSpeed);
+    }
+
+    void UpdateRotation()
+    {
+        if(agent.velocity.sqrMagnitude > 0.01f)
+        {
+            Vector3 dir = agent.velocity.normalized;
+            dir.y = 0f;
+            Quaternion targetRot = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Slerp(transform.rotation,targetRot,Time.deltaTime*10f);
         }
     }
 
