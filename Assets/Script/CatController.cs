@@ -39,12 +39,16 @@ public class CatController : MonoBehaviour
     public float soundSpeed = 2.5f;  // 音調査速度
     Animator anim;
     public float backDetectDistance = 1.5f;
+    Transform target;
+    public GameObject alertMark;
+    public GameObject questionMark;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         player = GameObject.FindGameObjectWithTag("Player").transform;
+        target = player.Find("TargetPoint");
         playerControlle = player.GetComponent<PlayerContollore>();
         gameOver =FindAnyObjectByType<GameOverController>();
         anim = GetComponent<Animator>();
@@ -86,20 +90,20 @@ public class CatController : MonoBehaviour
 
         if(CanDetectPlayer())
         {
-            currentState = CatState.Chase;
+            ChangeState(CatState.Chase);
         }
     }
 
     void ChaseUpdate()
     {
         agent.speed = chaseSpeed;
-        agent.SetDestination(player.position);
-        lastPosition = player.position;
+        agent.SetDestination(target.position);
+        lastPosition = target.position;
 
         // ハイド中or視界から消える
         if (!CanDetectPlayer() || playerControlle.isHidden)
         {
-            currentState = CatState.Search;
+            ChangeState(CatState.Search);
             searchTimer = searchTime;
             moveTimer = maxSearchMoveTime;
             movingPatrolPoint = false;
@@ -116,7 +120,7 @@ public class CatController : MonoBehaviour
         //プレイヤーが視界に入ったら追跡
         if (CanDetectPlayer())
         {
-            currentState = CatState.Chase;
+            ChangeState(CatState.Chase);
             return;
         }
         // 最後に見た位置に到達or時間切れ
@@ -131,7 +135,7 @@ public class CatController : MonoBehaviour
         // 巡回地点に戻ったら Patrol へ
         if (movingPatrolPoint && !agent.pathPending && agent.remainingDistance < 0.3f)
         {
-            currentState = CatState.Patrol;
+            ChangeState(CatState.Patrol);
             MoveNextPoint();
         }
     }
@@ -142,7 +146,7 @@ public class CatController : MonoBehaviour
         if(currentSound  == null)
         {
             agent.isStopped = false;
-            currentState = CatState.Patrol;
+            ChangeState(CatState.Patrol);
             return;
         }
         //音の位置へ移動
@@ -175,7 +179,8 @@ public class CatController : MonoBehaviour
 
     bool CanDetectPlayer()
     {
-        Vector3 dirToPlayer =(player.position - transform.position);
+        if(currentState == CatState.SoundSearch) return false;
+        Vector3 dirToPlayer =(target.position - transform.position);
         float distance = dirToPlayer.magnitude;
         //背後でも近距離なら感知
         if (distance <= backDetectDistance)
@@ -184,7 +189,7 @@ public class CatController : MonoBehaviour
         // ② 前方視界判定
         dirToPlayer.Normalize();
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
-        if(angle <= viewAngle * 0.5f && Vector3.Distance(transform.position, player.position) <= viewDistance)
+        if(angle <= viewAngle * 0.5f && distance <= viewDistance)
         {
             return true;
         }
@@ -227,7 +232,7 @@ public class CatController : MonoBehaviour
             if(currentState != CatState.Chase)
             {
                 currentSound = other.gameObject;
-                currentState = CatState.SoundSearch;
+                ChangeState(CatState.SoundSearch);
             }
             
         }
@@ -244,11 +249,57 @@ public class CatController : MonoBehaviour
     {
         if(agent.velocity.sqrMagnitude > 0.01f)
         {
-            Vector3 dir = agent.velocity.normalized;
+            Vector3 dir;
+            if(currentState == CatState.Chase)
+            {
+                dir = (target.position - transform.position).normalized;
+            }
+            else if(agent.velocity.sqrMagnitude > 0.01f)
+            {
+                dir = agent.velocity.normalized;
+            }
+            else return;
             dir.y = 0f;
             Quaternion targetRot = Quaternion.LookRotation(dir);
             transform.rotation = Quaternion.Slerp(transform.rotation,targetRot,Time.deltaTime*10f);
         }
+    }
+
+    void ChangeState(CatState newState)
+    {
+        if (currentState == newState) return;
+        CatState oldState = currentState;
+        currentState = newState;
+        Debug.Log("状態変更: " + currentState + " → " + newState);
+        //発見時！
+        if (newState == CatState.SoundSearch || newState ==CatState.Chase)
+        {
+            AllMark(alertMark);
+        }
+        //見失い？
+        if(oldState == CatState.Chase && newState == CatState.Search)
+        {
+            AllMark(questionMark);
+        }
+    }
+
+    void AllMark(GameObject mark)
+    {
+        if(alertMark == null) return;
+        // 両方消す
+        if (alertMark != null) alertMark.SetActive(false);
+        if (questionMark != null) questionMark.SetActive(false);
+        //指定したマークだけ表示
+        mark.SetActive(true);
+        Debug.Log("発見　！マーク");
+        CancelInvoke(nameof(HideAllMark));
+        Invoke(nameof(HideAllMark),2.0f);
+        
+    }
+    void HideAllMark()
+    {
+        if(alertMark!=null)alertMark.SetActive(false);
+        if(questionMark!=null) questionMark.SetActive(false);
     }
 
 }
