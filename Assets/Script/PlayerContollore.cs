@@ -14,6 +14,8 @@ public class PlayerContollore : MonoBehaviour
     public GameObject soundItem;
     public float placeDistance = 1f; //ƒAƒCƒeƒ€‚ð‚¨‚­‹——£
     public bool hasSoundItem = false;
+    public int itemCount = 0;
+    public int neesItemCount = 3;
 
 
     private void Start()

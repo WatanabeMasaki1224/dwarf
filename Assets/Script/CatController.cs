@@ -223,7 +223,10 @@ public class CatController : MonoBehaviour
 
         if (other.CompareTag("Player"))
         {
-            gameOver.PlayGameOver();
+            if (currentState == CatState.Chase) // š’ÇÕ’†‚¾‚¯•ßŠl
+            {
+                gameOver.PlayGameOver();
+            }
             return;
         }
 

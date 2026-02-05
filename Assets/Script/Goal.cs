@@ -14,8 +14,16 @@ public class Goal : MonoBehaviour
         if(isClear) return;
         if(other.CompareTag("Player"))
         {
-            isClear = true;
-            PlayClear();
+            PlayerContollore pc = other.GetComponent<PlayerContollore>();
+            if (pc.itemCount >= pc.neesItemCount)
+            {
+                isClear = true;
+                PlayClear();
+            }
+            else
+            {
+                Debug.Log($"‚ ‚Æ{pc.neesItemCount - pc.itemCount}ŒÂ•K—v");
+            }
         }
     }
 
