@@ -6,8 +6,13 @@ using UnityEngine.UI;
 
 public class Goal : MonoBehaviour
 {
-    public Image fadeImage;
     bool isClear;
+    ClearController clearController;
+
+    private void Start()
+    {
+        clearController = GetComponent<ClearController>();
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -29,10 +34,13 @@ public class Goal : MonoBehaviour
 
     void PlayClear()
     {
-        if(fadeImage != null)
+        if (clearController != null)
         {
-            fadeImage.DOFade(1f, 0.5f);
+            clearController.PlayClear();
         }
-        Debug.Log("CLEAR");
+        else
+        {
+            Debug.LogError("ClearController ‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ");
+        }
     }
 }
