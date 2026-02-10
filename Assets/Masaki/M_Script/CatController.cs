@@ -117,14 +117,15 @@ public class CatController : MonoBehaviour
         agent.speed= soundSpeed;
         searchTimer -= Time.deltaTime;
         moveTimer -= Time.deltaTime;
-        //プレイヤーが視界に入ったら追跡
-        if (CanDetectPlayer())
+        // ★ハイド中は絶対に追跡に戻らない
+        if (!playerControlle.isHidden && CanDetectPlayer())
         {
             ChangeState(CatState.Chase);
             return;
         }
-        // 最後に見た位置に到達or時間切れ
-        if (!movingPatrolPoint && (!agent.pathPending && agent.remainingDistance < 0.3f || moveTimer <= 0f))
+
+        // ★一定時間は必ず探索する（即Patrolに戻らない）
+        if (searchTimer <= 0f)
         {
             Transform nearest = GetNearestPatrolPoint();
             agent.SetDestination(nearest.position);
@@ -180,13 +181,13 @@ public class CatController : MonoBehaviour
     bool CanDetectPlayer()
     {
         if(currentState == CatState.SoundSearch) return false;
+        if (playerControlle.isHidden) return false; //ハイド中は見えない
         Vector3 dirToPlayer =(target.position - transform.position);
         float distance = dirToPlayer.magnitude;
         //背後でも近距離なら感知
         if (distance <= backDetectDistance)
             return true;
-
-        // ② 前方視界判定
+　　　 //  前方視界判定
         dirToPlayer.Normalize();
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
         if(angle <= viewAngle * 0.5f && distance <= viewDistance)
@@ -303,6 +304,24 @@ public class CatController : MonoBehaviour
     {
         if(alertMark!=null)alertMark.SetActive(false);
         if(questionMark!=null) questionMark.SetActive(false);
+    }
+
+    public void StopCat()
+    {
+        enabled = false;
+
+        var agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+
+        var anim = GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.enabled = false;
+        }
     }
 
 }
