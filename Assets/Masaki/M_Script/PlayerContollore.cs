@@ -20,6 +20,8 @@ public class PlayerContollore : MonoBehaviour
     public int needItemCount = 3;
     public TextMeshProUGUI goalItemCountTxet; //アイテム数のテクスト
     public GameObject soundItemUI;
+    public AudioClip getItemSE;
+    public AudioSource audioSource;
 
 
     private void Start()
@@ -27,8 +29,9 @@ public class PlayerContollore : MonoBehaviour
         controller = GetComponent<CharacterController>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        GoalItemUI();
+        getItemUIUpdate();
         soundItemUI.SetActive(false);
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -98,7 +101,14 @@ public class PlayerContollore : MonoBehaviour
 
     public void GoalItemUI()
     {
-        if(goalItemCountTxet != null)
+        itemCount++;
+        audioSource.PlayOneShot(getItemSE);
+        getItemUIUpdate();
+    }
+
+    public void getItemUIUpdate()
+    {
+        if (goalItemCountTxet != null)
         {
             goalItemCountTxet.text = $"{itemCount}/{needItemCount}";
         }

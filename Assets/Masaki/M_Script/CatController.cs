@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Rendering;
 
 
 public enum CatState
@@ -42,6 +43,14 @@ public class CatController : MonoBehaviour
     Transform target;
     public GameObject alertMark;
     public GameObject questionMark;
+    public AudioClip alertSE;
+    private AudioSource audioSource;
+    public AudioClip meowSE;
+    public float minMeowInterval = 5f;
+    public float maxMeowInterval = 15f;
+    float meowTimer;
+
+
 
     private void Start()
     {
@@ -52,6 +61,8 @@ public class CatController : MonoBehaviour
         playerControlle = player.GetComponent<PlayerContollore>();
         gameOver =FindAnyObjectByType<GameOverController>();
         anim = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        ResetMeowTimer();
         MoveNextPoint();
     }
 
@@ -78,19 +89,26 @@ public class CatController : MonoBehaviour
     }
 
     void PatrolUpdate()
-    {   
+    {
         agent.speed = patrolSpeed;
         //巡回処理
         if (!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             MoveNextPoint();
         }
-        //近づいたら振り返る
-       // TurnAroundCat();
 
-        if(CanDetectPlayer())
+        if (CanDetectPlayer())
         {
             ChangeState(CatState.Chase);
+        }
+        meowTimer -= Time.deltaTime;
+        if (meowTimer <= 0f)
+        {
+            if (meowSE != null)
+            {
+                audioSource.PlayOneShot(meowSE);
+            }
+            ResetMeowTimer();
         }
     }
 
@@ -165,18 +183,6 @@ public class CatController : MonoBehaviour
         agent.SetDestination(patrolPoints[currentIndex].position);
         currentIndex = (currentIndex +1) % patrolPoints.Length;
     }
-
-    /*void TurnAroundCat() //振り向く
-    {
-        float distance = Vector3.Distance(transform.position,player.position);
-        if (distance < noticeRange)
-        {
-            Vector3 dir = player.position - transform.position;
-            dir.y = 0f;
-            Quaternion targetRot = Quaternion.LookRotation(dir);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * turnSpeed);
-        }
-    }*/
 
     bool CanDetectPlayer()
     {
@@ -287,11 +293,14 @@ public class CatController : MonoBehaviour
         if (currentState == newState) return;
         CatState oldState = currentState;
         currentState = newState;
-        Debug.Log("状態変更: " + currentState + " → " + newState);
         //発見時！
         if (newState == CatState.SoundSearch || newState ==CatState.Chase)
         {
             AllMark(alertMark);
+            if (alertSE != null)
+            {
+                audioSource.PlayOneShot(alertSE);
+            }
         }
         //見失い？
         if(oldState == CatState.Chase && newState == CatState.Search)
@@ -308,7 +317,6 @@ public class CatController : MonoBehaviour
         if (questionMark != null) questionMark.SetActive(false);
         //指定したマークだけ表示
         mark.SetActive(true);
-        Debug.Log("発見　！マーク");
         CancelInvoke(nameof(HideAllMark));
         Invoke(nameof(HideAllMark),2.0f);
         
@@ -358,5 +366,8 @@ public class CatController : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, backDetectDistance);
     }
 
-
+    void ResetMeowTimer()
+    {
+        meowTimer = Random.Range(minMeowInterval, maxMeowInterval);
+    }
 }
