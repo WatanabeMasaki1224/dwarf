@@ -180,20 +180,33 @@ public class CatController : MonoBehaviour
 
     bool CanDetectPlayer()
     {
-        if(currentState == CatState.SoundSearch) return false;
-        if (playerControlle.isHidden) return false; //ハイド中は見えない
-        Vector3 dirToPlayer =(target.position - transform.position);
+        if (currentState == CatState.SoundSearch) return false;
+        if (playerControlle.isHidden) return false;
+
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        Vector3 dirToPlayer = target.position - origin;
         float distance = dirToPlayer.magnitude;
-        //背後でも近距離なら感知
+
+        // 背後でも超近距離なら感知
         if (distance <= backDetectDistance)
             return true;
-　　　 //  前方視界判定
-        dirToPlayer.Normalize();
+
+        if (distance > viewDistance)
+            return false;
+
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
-        if(angle <= viewAngle * 0.5f && distance <= viewDistance)
+        if (angle > viewAngle * 0.5f)
+            return false;
+        // 遮蔽チェック
+        RaycastHit hit;
+        if (Physics.Raycast(origin, dirToPlayer.normalized, out hit, viewDistance))
         {
-            return true;
+            if (hit.collider.CompareTag("Player"))
+            {
+                return true; // 直接見えている
+            }
         }
+
         return false;
     }
 
@@ -323,5 +336,27 @@ public class CatController : MonoBehaviour
             anim.enabled = false;
         }
     }
+
+    private void OnDrawGizmosSelected()
+    {
+        // ===== 視界距離（前方） =====
+        Gizmos.color = Color.yellow;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
+
+        // 視界の中心線
+        Gizmos.DrawLine(origin, origin + transform.forward * viewDistance);
+
+        // 左右の視界ライン
+        Vector3 leftDir = Quaternion.Euler(0, -viewAngle * 0.5f, 0) * transform.forward;
+        Vector3 rightDir = Quaternion.Euler(0, viewAngle * 0.5f, 0) * transform.forward;
+
+        Gizmos.DrawLine(origin, origin + leftDir * viewDistance);
+        Gizmos.DrawLine(origin, origin + rightDir * viewDistance);
+
+        // ===== 背後近距離感知 =====
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, backDetectDistance);
+    }
+
 
 }

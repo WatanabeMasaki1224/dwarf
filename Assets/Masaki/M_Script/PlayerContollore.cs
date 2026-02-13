@@ -86,7 +86,11 @@ public class PlayerContollore : MonoBehaviour
 
     void PlaceSoundItem()
     {
-        Vector3 pos = transform.position + transform.forward * placeDistance;
+        Vector3 camForward = Camera.main.transform.forward;
+        camForward.y = 0f;         
+        camForward.Normalize();
+
+        Vector3 pos = transform.position + camForward * placeDistance;
         Instantiate(soundItem,pos,Quaternion.identity);
         hasSoundItem = false;
         SoundItemUI();
