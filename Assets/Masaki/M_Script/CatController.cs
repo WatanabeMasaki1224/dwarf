@@ -49,6 +49,10 @@ public class CatController : MonoBehaviour
     public float minMeowInterval = 5f;
     public float maxMeowInterval = 15f;
     float meowTimer;
+    [Header("Catch")]
+    public float catchDistance = 0.6f; // îLÇ™ïﬂÇ‹Ç¶ÇÈãóó£
+    bool isGameOver = false;
+
 
 
 
@@ -86,6 +90,7 @@ public class CatController : MonoBehaviour
         }
         UpdateAnimation();
         UpdateRotation();
+        CheckCatchPlayer();
     }
 
     void PatrolUpdate()
@@ -241,15 +246,6 @@ public class CatController : MonoBehaviour
             return;
         }
 
-        if (other.CompareTag("Player"))
-        {
-            if (currentState == CatState.Chase) // Åöí«ê’íÜÇæÇØïﬂäl
-            {
-                gameOver.PlayGameOver();
-            }
-            return;
-        }
-
         if (other.CompareTag("SoundItem"))
         {
             if(currentState != CatState.Chase)
@@ -370,4 +366,19 @@ public class CatController : MonoBehaviour
     {
         meowTimer = Random.Range(minMeowInterval, maxMeowInterval);
     }
+
+    void CheckCatchPlayer()
+    {
+        if (isGameOver) return;
+        if (currentState != CatState.Chase) return;
+
+        float dist = Vector3.Distance(transform.position, player.position);
+
+        if (dist <= catchDistance)
+        {
+            isGameOver = true;
+            gameOver.PlayGameOver();
+        }
+    }
+
 }

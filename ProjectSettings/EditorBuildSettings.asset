@@ -4,5 +4,11 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Masaki/M_Scenes/Title.unity
+    guid: 8c4f1bf3a724c46418f52f8a0d7fe0c1
+  - enabled: 1
+    path: Assets/Masaki/M_Scenes/1stStage.unity
+    guid: c17f59a4589ca6648966907fdf16cb7d
   m_configObjects: {}
