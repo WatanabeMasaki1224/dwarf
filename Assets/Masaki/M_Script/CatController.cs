@@ -46,6 +46,8 @@ public class CatController : MonoBehaviour
     public AudioClip alertSE;
     private AudioSource audioSource;
     public AudioClip meowSE;
+    public float meowVolume = 0.5f;  
+    public float alertVolume = 0.7f; 
     public float minMeowInterval = 5f;
     public float maxMeowInterval = 15f;
     float meowTimer;
@@ -111,7 +113,7 @@ public class CatController : MonoBehaviour
         {
             if (meowSE != null)
             {
-                audioSource.PlayOneShot(meowSE);
+                audioSource.PlayOneShot(meowSE,meowVolume);
             }
             ResetMeowTimer();
         }
@@ -295,7 +297,7 @@ public class CatController : MonoBehaviour
             AllMark(alertMark);
             if (alertSE != null)
             {
-                audioSource.PlayOneShot(alertSE);
+                audioSource.PlayOneShot(alertSE,alertVolume);
             }
         }
         //å©é∏Ç¢ÅH

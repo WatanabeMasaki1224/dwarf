@@ -16,6 +16,10 @@ public class GameOverController : MonoBehaviour
     public Button titleButton;
     bool isGameOver = false;
     public GameObject[] stopCats;
+    public AudioSource audioSource;
+    public AudioClip clickSE;
+    public AudioClip gameOverBGM;
+    public Image clickFadeImage; 
 
     private void Start()
     {
@@ -47,7 +51,13 @@ public class GameOverController : MonoBehaviour
                 }
             }
         }
-        
+
+        if (gameOverBGM != null)
+        {
+            audioSource.clip = gameOverBGM;
+            audioSource.Play();
+        }
+
         fadeImage.DOFade(1f, 1f);
         StartCoroutine(TypeGameOver());
     }
@@ -68,15 +78,22 @@ public class GameOverController : MonoBehaviour
 
     public void Retry()
     {
+        audioSource.PlayOneShot(clickSE);
         DOTween.KillAll();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        Debug.Log("リトライ");
+        clickFadeImage.DOFade(1f, 1f).OnComplete(() =>
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        });
     }
 
     public void BackToTitle()
     {
+        audioSource.PlayOneShot(clickSE);
         DOTween.KillAll();
-        SceneManager.LoadScene("Title");
+        clickFadeImage.DOFade(1f, 1f).OnComplete(() =>
+        {
+            SceneManager.LoadScene("Title");
+        });
         Debug.Log("スタートへ");
     }
 }

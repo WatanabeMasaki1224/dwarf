@@ -14,8 +14,11 @@ public class ClearController : MonoBehaviour
     public Button retryButton;
     public Button titleButton;
     public GameObject[] stopCats;
-    public AudioSource stageBGM;
-
+    public AudioSource audioSource;
+    public AudioClip clearBGM;
+    public AudioClip clickSE;
+    public Image clickFadeImage;
+    
     bool isClear = false;
 
     void Start()
@@ -47,9 +50,10 @@ public class ClearController : MonoBehaviour
                 }
             }
         }
-        if(stageBGM != null)
+        if(clearBGM != null)
         {
-            stageBGM.Pause();
+            audioSource.clip = clearBGM;
+            audioSource.Play();
         }
         // ★マウス解放（超重要）  これをしないとマウス操作が反応しない
         Cursor.lockState = CursorLockMode.None;
@@ -80,11 +84,19 @@ public class ClearController : MonoBehaviour
 
     public void Retry()
     {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        audioSource.PlayOneShot(clickSE);
+        clickFadeImage.DOFade(1f, 1f).OnComplete(() =>
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        });
     }
 
     public void BackToTitle()
     {
-        SceneManager.LoadScene("Title");
+        audioSource.PlayOneShot(clickSE);
+        clickFadeImage.DOFade(1f, 1f).OnComplete(() =>
+        {
+            SceneManager.LoadScene("Title");
+        });
     }
 }
