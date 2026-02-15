@@ -3518,7 +3518,7 @@ MonoBehaviour:
   stopCats:
   - {fileID: 2113007761}
   audioSource: {fileID: 1340654215}
-  clearBGM: {fileID: 0}
+  clearBGM: {fileID: 8300000, guid: fbb77009e8694e5479753a413ce91c83, type: 3}
   clickSE: {fileID: 8300000, guid: 5a083ca4464cdc442be4710cfb9ba350, type: 3}
   clickFadeImage: {fileID: 8440839}
 --- !u!82 &1340654215
@@ -6465,7 +6465,7 @@ MonoBehaviour:
   - {fileID: 2113007761}
   audioSource: {fileID: 5609645505996886653}
   clickSE: {fileID: 8300000, guid: 5a083ca4464cdc442be4710cfb9ba350, type: 3}
-  gameOverBGM: {fileID: 0}
+  gameOverBGM: {fileID: 8300000, guid: 3c8830d4c3537f24aa55fb69c35410e3, type: 3}
   clickFadeImage: {fileID: 8440839}
 --- !u!82 &5609645505996886653
 AudioSource:
