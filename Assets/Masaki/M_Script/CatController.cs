@@ -261,12 +261,8 @@ public class CatController : MonoBehaviour
 
         if (other.CompareTag("SoundItem"))
         {
-            if(currentState != CatState.Chase)
-            {
                 currentSound = other.gameObject;
                 ChangeState(CatState.SoundSearch);
-            }
-            
         }
     }
 

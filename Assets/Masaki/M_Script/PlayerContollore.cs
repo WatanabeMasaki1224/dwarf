@@ -47,6 +47,10 @@ public class PlayerContollore : MonoBehaviour
         camForward.Normalize();
         camRight.Normalize();
         Vector3 move = camRight * x + camForward * z;
+        if (move.magnitude > 1f)
+        {
+            move.Normalize();
+        }
         controller.Move(move * moveSpeed * Time.deltaTime);   
         if(controller.isGrounded && velocity.y < 0)
         {
