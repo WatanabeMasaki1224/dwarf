@@ -19,7 +19,8 @@ public class GameOverController : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip clickSE;
     public AudioClip gameOverBGM;
-    public Image clickFadeImage; 
+    public Image clickFadeImage;
+    public AudioSource stageBGM;
 
     private void Start()
     {
@@ -34,10 +35,10 @@ public class GameOverController : MonoBehaviour
         if (isGameOver) return;
         isGameOver = true;
         gameOverPanel.SetActive(true);
-        // ★プレイヤー操作停止
+        //プレイヤー操作停止
         PlayerContollore player = FindObjectOfType<PlayerContollore>();
         player.enabled = false;
-        // ★マウス解放（超重要）  これをしないとマウス操作が反応しない
+        //マウス解放（超重要）  これをしないとマウス操作が反応しない
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         foreach (var cat in stopCats)
@@ -47,7 +48,7 @@ public class GameOverController : MonoBehaviour
                 var catcr = cat.GetComponent<CatController>();
                 if (catcr != null)
                 {
-                    catcr.StopCat(); // ★これだけでOK
+                    catcr.StopCat(); 
                 }
             }
         }
@@ -57,7 +58,8 @@ public class GameOverController : MonoBehaviour
             audioSource.clip = gameOverBGM;
             audioSource.Play();
         }
-
+        
+        stageBGM.Stop();
         fadeImage.DOFade(1f, 1f);
         StartCoroutine(TypeGameOver());
     }
@@ -66,12 +68,9 @@ public class GameOverController : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         gameOverText.DOFade(0.8f, 1f); // じわっと表示
-        // ④ 文字を少し震わせる（ホラー）
+        //文字を少し震わせる
         gameOverText.transform.DOShakePosition(5f, 8f, 20);
-
         yield return new WaitForSeconds(1.0f);
-
-        // ⑤ ボタン表示
         retryButton.transform.DOScale(1f, 0.3f).From(0f);
         titleButton.transform.DOScale(1f, 0.3f).From(0f);
     }

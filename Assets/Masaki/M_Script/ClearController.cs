@@ -18,6 +18,7 @@ public class ClearController : MonoBehaviour
     public AudioClip clearBGM;
     public AudioClip clickSE;
     public Image clickFadeImage;
+    public AudioSource stageBGM;
     
     bool isClear = false;
 
@@ -55,6 +56,7 @@ public class ClearController : MonoBehaviour
             audioSource.clip = clearBGM;
             audioSource.Play();
         }
+        stageBGM.Stop();
         // ★マウス解放（超重要）  これをしないとマウス操作が反応しない
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
