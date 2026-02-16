@@ -216,7 +216,8 @@ public class CatController : MonoBehaviour
 
         if (distance > viewDistance)
             return false;
-
+        
+  
         float angle = Vector3.Angle(transform.forward, dirToPlayer);
         if (angle > viewAngle * 0.5f)
             return false;
@@ -224,7 +225,7 @@ public class CatController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(origin, dirToPlayer.normalized, out hit, viewDistance))
         {
-            if (hit.collider.CompareTag("Player"))
+            if (hit.transform.root.CompareTag("Player"))
             {
                 return true; // íºê⁄å©Ç¶ÇƒÇ¢ÇÈ
             }
