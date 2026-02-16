@@ -168,17 +168,27 @@ public class CatController : MonoBehaviour
 
     void SoundUpdate()
     {
-        //音アイテムが消えたら巡回に戻る
-        if(currentSound  == null)
+        agent.stoppingDistance = 0f;
+
+        if (currentSound == null)
         {
             agent.isStopped = false;
             ChangeState(CatState.Patrol);
             return;
         }
-        //音の位置へ移動
-        agent.SetDestination(currentSound.transform.position);
-        //到着したらその場で待機
-        if(!agent.pathPending && agent.remainingDistance < 0.3f)
+
+        Vector3 soundPos = currentSound.transform.position;
+
+        // ★ 猫→鈴の方向
+        Vector3 dir = (soundPos - transform.position).normalized;
+
+        // ★ 鈴の手前で止まる位置
+        float offset = 0.6f; // 猫の体サイズに合わせて調整
+        Vector3 targetPos = soundPos - dir * offset;
+
+        agent.SetDestination(targetPos);
+
+        if (!agent.pathPending && agent.remainingDistance < 0.2f)
         {
             agent.isStopped = true;
         }
